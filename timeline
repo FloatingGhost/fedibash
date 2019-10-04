@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+source .config
+
+function setV() {
+    grep -q $1 .config || echo "$1=$2" >> .config
+    sed -i.tmp "s|$1=.*|$1=$2|" .config
+}
+
+LASTSEEN=${LASTSEEN-""}
+
+while true
+    do
+    URL="$INSTANCE_URL/api/v1/timelines/home"
+    if [ "$LASTSEEN" != "" ] ; then
+        URL+="?since_id=$LASTSEEN"
+    fi
+
+    RESP=$(curl -s \
+        -XGET \
+        $URL \
+        --header "Authorization: $ACCESS_TOKEN")
+
+    echo $RESP  | \
+        jq -r \
+          --arg LASTSEEN "$LASTSEEN" \
+          '.[] | select(.id > $LASTSEEN) | .account.display_name + ": " + .pleroma.content["text/plain"]'
+
+    TMPLASTSEEN=$(echo $RESP | jq '.[0].id' | sed "s|\"||g")
+    if [ $TMPLASTSEEN != 'null' ]; then
+        LASTSEEN=$TMPLASTSEEN
+    fi
+    setV LASTSEEN $LASTSEEN
+    sleep 5
+done
