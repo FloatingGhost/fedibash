@@ -37,7 +37,7 @@ done
 
 MSG=${POSITIONAL[@]}
 
-RESP=$(curl \
+RESP=$(curl --silent \
     -XPOST \
     $INSTANCE_URL/api/v1/statuses \
     --header "Authorization: $ACCESS_TOKEN" \
