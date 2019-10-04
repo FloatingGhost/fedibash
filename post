@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -euxo pipefail
+source .config
+
+usage() {
+    cat <<EOF
+Usage: ./post
+
+Options:
+  -v / --visibility: set the post's visibility - public/unlisted/private/direct
+EOF
+}
+
+VISIBILITY=public
+POSITIONAL=($(read -t 1 || echo ""))
+
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+    -v|--visibility)
+    VISIBILITY="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -h|--help)
+    usage
+    exit 0
+    ;;
+    *)    # unknown option
+    POSITIONAL+=("$1") # save it in an array for later
+    shift # past argument
+    ;;
+esac
+done
+
+MSG=${POSITIONAL[@]}
+
+RESP=$(curl \
+    -XPOST \
+    $INSTANCE_URL/api/v1/statuses \
+    --header "Authorization: $ACCESS_TOKEN" \
+    --data-urlencode "status=$MSG" \
+    --data-urlencode "visibility=$VISIBILITY")
+
+echo $(echo $RESP | jq .url)

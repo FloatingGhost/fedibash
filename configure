@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+read -p "Instance URL (with https://): " INSTANCE_URL
+
+echo "INSTANCE_URL=$INSTANCE_URL" > .config
