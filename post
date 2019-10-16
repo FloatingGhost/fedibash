@@ -4,12 +4,18 @@ source .config
 
 usage() {
     cat <<EOF
-Usage: ./post
+Usage: ./post content of post
 
 Options:
   -v / --visibility: set the post's visibility - public/unlisted/private/direct
 EOF
 }
+
+if [ $# -eq 0 ];
+then
+    usage
+    exit 1
+fi
 
 VISIBILITY=public
 POSITIONAL=($(read -t 1 || echo ""))
