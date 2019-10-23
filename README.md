@@ -23,8 +23,9 @@ Post usage:
 ./post [options] message
 
 options:
-  -i/--image path_to_image
-  -v/--visibility public|unlisted|private|direct
+  -r/--reply post_id :: Reply to a specific post
+  -i/--image path_to_image :: attach an image
+  -v/--visibility public|unlisted|private|direct :: set visibility
 ```  
 
 you can use `-i` multiple times to upload multiple images, if you want to do that.

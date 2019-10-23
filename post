@@ -21,10 +21,17 @@ VISIBILITY=$DEFAULT_VISIBILITY
 IMAGES=()
 IMGLEN=0
 POSITIONAL=($(read -t 1 || echo ""))
+REPLYTO=false
 
 while [[ $# -gt 0 ]]
 do
 key="$1"
+
+RESP=$(curl --silent \
+    --header "Authorization: $ACCESS_TOKEN" \
+    $INSTANCE_URL/api/v1/accounts/verify_credentials)
+
+MYUSER=$(echo $RESP | jq .username | sed "s|\"||g")
 
 case $key in
     -v|--visibility)
@@ -35,6 +42,11 @@ case $key in
     -i|--image)
     IMAGES[$IMGLEN]="$2"
     IMGLEN=$(($IMGLEN+1))
+    shift
+    shift
+    ;;
+    -r|--reply)
+    REPLYTO=$2
     shift
     shift
     ;;
@@ -57,12 +69,10 @@ POST_COMMAND="
 curl --silent \
     -XPOST $INSTANCE_URL/api/v1/statuses 
     --header \"Authorization: $ACCESS_TOKEN\" 
-    --data-urlencode \"status=$MSG\" 
     --data-urlencode \"visibility=$VISIBILITY\"
 "
 
 for i in ${IMAGES[@]}; do
-  echo "UPLOAD $i"
   RESP=$(curl --silent \
     -XPOST \
     $INSTANCE_URL/api/v1/media \
@@ -72,5 +82,26 @@ for i in ${IMAGES[@]}; do
   POST_COMMAND+=" --data-urlencode \"media_ids[]=$ID\""
 done
 
+if [ $REPLYTO != false ]; then
+  RESP=$(curl --silent \
+    -XGET \
+    $INSTANCE_URL/api/v1/statuses/$REPLYTO \
+    --header "Authorization: $ACCESS_TOKEN")
+  echo $RESP > test.json
+  MENTIONS=$(
+    echo $RESP | jq -r --arg MYUSER "$MYUSER" \
+    '.mentions | unique_by(.id) | .[] | select(.acct != $MYUSER) | .acct')
+
+  for i in ${MENTIONS[@]}; do
+    MSG="@$i $MSG"
+  done
+
+  OP=$(echo $RESP | jq '.account.acct' | sed "s|\"||g")
+  MSG="@$OP $MSG"
+  
+  POST_COMMAND+=" --data-urlencode \"in_reply_to_id=$REPLYTO\""
+fi
+
+POST_COMMAND+=" --data-urlencode \"status=$MSG\""
 RESP=$(eval $POST_COMMAND)
 echo $(echo $RESP | jq .url)

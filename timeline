@@ -25,7 +25,7 @@ while true
     echo $RESP  | \
         jq -r \
           --arg LASTSEEN "$LASTSEEN" \
-          '.[] | select(.id > $LASTSEEN) | .account.display_name + ": " + .pleroma.content["text/plain"]'
+          '.[] | select(.id > $LASTSEEN) | .account.display_name + " (" + .id + "): " + .pleroma.content["text/plain"]'
 
     TMPLASTSEEN=$(echo $RESP | jq '.[0].id' | sed "s|\"||g")
     if [ $TMPLASTSEEN != 'null' ]; then
