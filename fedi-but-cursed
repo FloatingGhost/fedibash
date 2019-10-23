@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-tmux new-session -d 'fedi'
-tmux split-window -v './timeline home'
-tmux split-window -h
+tmux new-session -d -t 'fedi'
+tmux split-window -b -v './timeline home' 
+tmux select-pane -t:.1
 tmux -2 attach-session -d
