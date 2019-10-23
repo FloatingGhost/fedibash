@@ -14,3 +14,12 @@ sudo apt update && sudo apt install -y jq
 ./login
 ./post i want to die
 ```
+
+Post usage:
+```bash
+./post [options] message
+
+options:
+  -i/--image path_to_image
+  -v/--visibility public|unlisted|private|direct
+```  
