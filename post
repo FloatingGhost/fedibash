@@ -18,6 +18,7 @@ then
 fi
 
 VISIBILITY=public
+IMAGE=none
 POSITIONAL=($(read -t 1 || echo ""))
 
 while [[ $# -gt 0 ]]
@@ -29,6 +30,11 @@ case $key in
     VISIBILITY="$2"
     shift # past argument
     shift # past value
+    ;;
+    -i|--image)
+    IMAGE="$2"
+    shift
+    shift
     ;;
     -h|--help)
     usage
@@ -42,12 +48,24 @@ esac
 done
 
 MSG=${POSITIONAL[@]}
+MEDIAIDS="[]"
 
+if [ "$IMAGE" != "none" ]; then
+  RESP=$(curl --silent \
+    -XPOST \
+    $INSTANCE_URL/api/v1/media \
+    --header "Authorization: $ACCESS_TOKEN" \
+    -F "file=@$IMAGE")
+  ID=$(echo $RESP | jq .id | sed "s|\"||g")
+  MEDIAIDS="$ID"
+fi
+  
 RESP=$(curl --silent \
     -XPOST \
     $INSTANCE_URL/api/v1/statuses \
     --header "Authorization: $ACCESS_TOKEN" \
     --data-urlencode "status=$MSG" \
-    --data-urlencode "visibility=$VISIBILITY")
+    --data-urlencode "visibility=$VISIBILITY" \
+    --data-urlencode "media_ids[]=$MEDIAIDS")
 
 echo $(echo $RESP | jq .url)
