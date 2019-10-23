@@ -23,3 +23,5 @@ options:
   -i/--image path_to_image
   -v/--visibility public|unlisted|private|direct
 ```  
+
+you can use `-i` multiple times to upload multiple images, if you want to do that.

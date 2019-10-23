@@ -18,7 +18,8 @@ then
 fi
 
 VISIBILITY=public
-IMAGE=none
+IMAGES=()
+IMGLEN=0
 POSITIONAL=($(read -t 1 || echo ""))
 
 while [[ $# -gt 0 ]]
@@ -32,7 +33,8 @@ case $key in
     shift # past value
     ;;
     -i|--image)
-    IMAGE="$2"
+    IMAGES[$IMGLEN]="$2"
+    IMGLEN=$(($IMGLEN+1))
     shift
     shift
     ;;
@@ -48,24 +50,27 @@ esac
 done
 
 MSG=${POSITIONAL[@]}
-MEDIAIDS="[]"
+MEDIAIDS=()
+IMGLEN=0
 
-if [ "$IMAGE" != "none" ]; then
+POST_COMMAND="
+curl --silent \
+    -XPOST $INSTANCE_URL/api/v1/statuses 
+    --header \"Authorization: $ACCESS_TOKEN\" 
+    --data-urlencode \"status=$MSG\" 
+    --data-urlencode \"visibility=$VISIBILITY\"
+"
+
+for i in ${IMAGES[@]}; do
+  echo "UPLOAD $i"
   RESP=$(curl --silent \
     -XPOST \
     $INSTANCE_URL/api/v1/media \
     --header "Authorization: $ACCESS_TOKEN" \
-    -F "file=@$IMAGE")
+    -F "file=@$i")
   ID=$(echo $RESP | jq .id | sed "s|\"||g")
-  MEDIAIDS="$ID"
-fi
-  
-RESP=$(curl --silent \
-    -XPOST \
-    $INSTANCE_URL/api/v1/statuses \
-    --header "Authorization: $ACCESS_TOKEN" \
-    --data-urlencode "status=$MSG" \
-    --data-urlencode "visibility=$VISIBILITY" \
-    --data-urlencode "media_ids[]=$MEDIAIDS")
+  POST_COMMAND+=" --data-urlencode \"media_ids[]=$ID\""
+done
 
+RESP=$(eval $POST_COMMAND)
 echo $(echo $RESP | jq .url)
