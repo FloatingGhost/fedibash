@@ -2,5 +2,7 @@
 set -euo pipefail
 
 read -p "Instance URL (with https://): " INSTANCE_URL
+read -p "Default visibility (public,unlisted,private): " DEFAULT_VISIBILITY
 
-echo "INSTANCE_URL=$INSTANCE_URL" > .config
+echo "INSTANCE_URL=$INSTANCE_URL
+DEFAULT_VISIBILITY=$DEFAULT_VISIBILITY" >> .config

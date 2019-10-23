@@ -17,7 +17,7 @@ then
     exit 1
 fi
 
-VISIBILITY=public
+VISIBILITY=$DEFAULT_VISIBILITY
 IMAGES=()
 IMGLEN=0
 POSITIONAL=($(read -t 1 || echo ""))
