@@ -15,6 +15,9 @@ sudo apt update && sudo apt install -y jq
 ./post i want to die
 ```
 
+Or you can use `./fedi-but-cursed` with tmux installed to have a timeline-and-posting
+window thing I guess
+
 Post usage:
 ```bash
 ./post [options] message
